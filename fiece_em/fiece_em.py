@@ -20,23 +20,29 @@ class FieceEm(BaseEstimator, ClassifierMixin):
         An object representing the constraints
     kmax : int
         Maximum number of clusters.
-    population_size : int
+    population_size : int, optional
         Size of the populations to generate.
-    max_init_tries : int
+    max_init_tries : int, optional
         Maximum number of allowed failures to generate a feasible individual.
-    p_min : int
+    p_min : int, optional
         Minumum size of the population.
-    max_iter_em : int
+    max_iter_em : int, optional
         Maximum number of EM iterations.
-    max_generations : int
+    max_generations : int, optional
         Maximum number of generations.
+    random_state : int, optional
+        A seed to use in initializations.
     min_improv: int
         An integer between 0-1, defines how much the fitness must improve
         before we stop.
     min_improv_gens: int
         Number of generations that fitness must improve at least "min_improv"
-    can_return_infeasible : bool
+    can_return_infeasible : bool, optional
         If no feasible solution is found, is it ok to return an infeasible?
+    k_means_max_iter : int, optional
+        How many k-means iterations should be used for initialization.
+    store_fitness_curve : bool, optional
+        Should FIECE-EM store its fitness curve?
     """
 
     def __init__(self, constraints, kmax, population_size=20, max_init_tries=3,
@@ -83,7 +89,7 @@ class FieceEm(BaseEstimator, ClassifierMixin):
 
         self.random_state = random_state
 
-    def fill_remaining(self, feasible, infeasible, X, to_size):
+    def _fill_remaining(self, feasible, infeasible, X, to_size):
         extra_feasible, extra_infeasible = \
             initialize_feasible_infeasible(
                 X,
@@ -115,7 +121,7 @@ class FieceEm(BaseEstimator, ClassifierMixin):
         np.random.seed(self.random_state)
         X = check_array(X)
         feasible, infeasible = \
-            self.fill_remaining([], [], X, self.population_size)
+            self._fill_remaining([], [], X, self.population_size)
         self.total_parents_killed = 0
         self.potential_parents_killed = 0
 
@@ -175,12 +181,12 @@ class FieceEm(BaseEstimator, ClassifierMixin):
                                                       self.population_size,
                                                       self.constraints, X)
 
-            feasible, infeasible = self.fill_remaining(feasible, infeasible, X,
+            feasible, infeasible = self._fill_remaining(feasible, infeasible, X,
                                                        self.p_min)
             t += 1
 
             if self.store_fitness_curve:
-                self.store_curves(feasible, infeasible, X)
+                self._store_curves(feasible, infeasible, X)
 
         self.feasible, self.infeasible = feasible, infeasible
         if feasible:
@@ -194,12 +200,12 @@ class FieceEm(BaseEstimator, ClassifierMixin):
             self.is_best_feasible_ = False
 
         if self.store_fitness_curve:
-            self.store_curves(feasible, infeasible, X)
+            self._store_curves(feasible, infeasible, X)
 
         self.total_generations_run += t
         return self
 
-    def store_curves(self, feasible, infeasible, X):
+    def _store_curves(self, feasible, infeasible, X):
         ffc = [f.feasible_fitness(X)
                for f in feasible] if feasible else [np.inf]
         ifc = [i.infeasible_fitness(self.constraints, X)
@@ -231,14 +237,41 @@ class FieceEm(BaseEstimator, ClassifierMixin):
         return self.best_individual_.predict(X)
 
     def predict_cluster(self, X):
+        """Predict the clusters for the data samples in X using trained model.
+
+        Parameters
+        ----------
+        X : array_like
+            List of n_features-dimensional data points.
+            Each row corresponds to a single data point.
+
+        Returns
+        -------
+        clusters : array, shape (n_samples,)
+            Clusters as predicted by the best feasible individual.
+
+        """
         self._check_before_predict(X)
         return self.best_individual_.predict_cluster(X)
 
     def predict_proba(self, X):
+        """Predict the probabilities for the data samples in X using trained model.
+
+        Parameters
+        ----------
+        X : array_like
+            List of n_features-dimensional data points.
+            Each row corresponds to a single data point.
+
+        Returns
+        -------
+        probabilities : array, shape (n_samples, n_clusters)
+            Chunklet probabilities as predicted by the best feasible individual.
+        """
         self._check_before_predict(X)
         return self.best_individual_.predict_proba(X)
 
-    def predict_proba_sum(self, X):
+    def _predict_proba_sum(self, X):
         self._check_before_predict(X)
         return self.best_individual_.predict_proba_sum(X)
 

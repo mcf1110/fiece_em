@@ -47,7 +47,7 @@ def ask_oracle(r, queries, oracle, copy=True):
     Parameters
     ----------
     r : Constraints
-        The current resctrictions.
+        The current constraints.
     queries : list of tuples
         A list of pairwise queries.
     oracle : function
@@ -75,6 +75,11 @@ def ask_oracle(r, queries, oracle, copy=True):
             new_r.add_cannot_link(a, b)
         count += 1
     return new_r, count
+
+def ask_with_strategy(fiece_em, old_r, X, oracle, strategy, size):
+    objects_to_label = strategy(fiece_em, old_r, X, size)
+    pairwise_queries = to_pairwise(fiece_em, old_r, X, objects_to_label)
+    return ask_oracle(old_r, pairwise_queries, oracle)
 
 
 def luc_custom_ask(fiece_em, old_r, X, oracle, size):

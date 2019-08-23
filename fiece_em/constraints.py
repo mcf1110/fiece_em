@@ -4,7 +4,7 @@ from itertools import chain
 import numpy as np
 
 
-class Constraints(object):
+class Constraints:
     """Class that automatically manages must links and cannot links,
     transitivity and chunklets.
 
@@ -30,6 +30,8 @@ class Constraints(object):
             Number of examples to pick from each class.
         labels : array_like
             A list of every example's class.
+        seed : int, optional 
+            A seed to use in initialization.
 
         Returns
         -------
