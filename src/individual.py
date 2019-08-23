@@ -435,7 +435,7 @@ class Individual:
         class_proba = np.vstack([fn(clusters_proba[:, df.index], axis=1)
                                  for _, df in pd.DataFrame(
                                          self.clusters_to_chunklets
-                                         ).clusterby(0)]).T
+                                         ).groupby(0)]).T
         return class_proba
 
     def predict_proba(self, X):
