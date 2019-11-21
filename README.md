@@ -13,6 +13,14 @@ If you find this code useful in your research, please consider citing:
   pages     = {1-8},
   doi       = {10.1109/CEC.2018.8477858},
 }
+
+@inproceedings{fernandes2019active,
+    title={Active Learning for Evolutionary Constrained Clustering},
+  author={Matheus Campos Fernandes and Thiago Ferreira Cov{\~o}es and André Luiz Vizine Pereira},
+  booktitle={2019 Brazilian Conference on Intelligent Systems},
+  year={2019},
+  organization={IEEE}
+} 
 ```
 
 # How to use
